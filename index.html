@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary</title>
+    <style>
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        .container{
+            width: 90%;
+            margin: auto;
+        }
+        input{
+            width: 100%;
+            padding: 4px;
+            margin: 2px auto;
+        }
+        .results{
+            margin: 8px 0px;
+        }
+        .box{ 
+            margin:10px 0px;
+            padding: 4px;
+        }
+        .box p{
+            text-decoration: underline;
+            margin-bottom: 8px;
+            font-weight: bolder;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form action="" method="post">
+            <input type="text" name="word" id="">
+            <input type="submit" value="Get meanings">
+        </form>
+        <div class="results">
+            <h1>Results</h1>
+        </div>
+    </div>
+    <script>
+        let submitBtn=document.querySelector("input[type='submit']");
+        submitBtn.addEventListener("click",(e)=>{
+            e.preventDefault();
+            // console.log(document.querySelector("input[type='text']").value);
+            let inputVal = document.querySelector("input[type='text']").value;
+            inputVal = inputVal.split(',');
+            inputVal = inputVal.map((e)=>e.trim());
+            inputVal.forEach((val)=>{
+                getMeaning(val);
+            })            
+        });
+
+        async function getMeaning(word) {
+            try{
+                let url=`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+                let data = await fetch(url);
+                console.log(data)
+                if(!data.ok) {
+                    let div=document.createElement('div');
+                    div.classList.add('box');
+                    div.innerHTML= `<h3 style='color:red;'>${word}: NOT FOUND</h3>`;
+                    document.querySelector(".results").append(div);
+                }
+                else {
+                    let resp = await data.json();
+                
+                let resultObj = resp[0];
+                let div=document.createElement('div');
+                div.classList.add('box');
+
+                let meaning= `<h3 style='color:red;'>${resultObj.word}</h3>`;
+                resultObj.meanings.forEach((e)=>{
+                    meaning+= `
+                        <div class ='inner-box'> <p> Part of Speech: ${e.partOfSpeech} </p><p>Definition</p><div>
+                    `;
+                    e.definitions.forEach((val)=>{
+                        meaning+=`<span>${val.definition},&nbsp;`;
+                    });
+                    meaning+="</div><div><p>Synonyms</p>";
+                    e.synonyms.forEach((e)=>{
+                        meaning+=`<span>${e},&nbsp;</span>`;
+                    })
+                    meaning+="</div></div>";
+                })
+                div.innerHTML = meaning;
+                document.querySelector(".results").append(div);
+                }
+                
+                
+            }
+            catch(err) {
+                alert("Error occured:"+err);
+            }
+
+        }
+    </script>
+</body>
+</html>
